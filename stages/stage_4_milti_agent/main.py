@@ -316,6 +316,20 @@ async def main():
 
     graph = create_graph()
 
+    # Bước 3: Vẽ graph (CODELAB requirement)
+    print("\n[Graph Visualization]")
+    graph_png_path = os.path.join(os.path.dirname(__file__), "graph.png")
+    try:
+        png_data = graph.get_graph().draw_mermaid_png()
+        with open(graph_png_path, "wb") as f:
+            f.write(png_data)
+        print(f"  Graph saved → {graph_png_path}")
+    except Exception as exc:
+        print(f"  PNG export unavailable ({exc})")
+        print("  Mermaid source:")
+        print(graph.get_graph().draw_mermaid())
+    print()
+
     result = await graph.ainvoke({
         "question": QUESTION,
         "law_analysis": "",
