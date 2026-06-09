@@ -172,7 +172,28 @@ def check_compliance_requirements(industry: str, company_size: str) -> str:
     )
 
 
-TOOLS = [search_legal_database, calculate_penalty, check_compliance_requirements]
+@tool
+def search_case_law(keywords: str) -> str:
+    """Tìm kiếm án lệ theo từ khóa.
+
+    Args:
+        keywords: Từ khóa tìm kiếm (ví dụ: breach, negligence, contract)
+    """
+    cases = {
+        "breach": "Hadley v. Baxendale (1854) — Consequential damages must be foreseeable at contract formation",
+        "negligence": "Donoghue v. Stevenson (1932) — Duty of care; manufacturer liable to end consumer",
+        "contract": "Carlill v. Carbolic Smoke Ball Co (1893) — Unilateral contract; advertisement = binding offer",
+        "fraud": "Derry v. Peek (1889) — Fraud requires knowledge of falsity or reckless disregard for truth",
+        "privacy": "Griswold v. Connecticut (1965) — Constitutional right to privacy; foundational for data privacy law",
+    }
+    keywords_lower = keywords.lower()
+    found = [case for kw, case in cases.items() if kw in keywords_lower]
+    if found:
+        return "\n".join(found)
+    return "Không tìm thấy án lệ phù hợp. Thử: breach, negligence, contract, fraud, privacy"
+
+
+TOOLS = [search_legal_database, calculate_penalty, check_compliance_requirements, search_case_law]
 
 QUESTION = (
     "A tech startup with $5M revenue was caught sharing user data without consent "

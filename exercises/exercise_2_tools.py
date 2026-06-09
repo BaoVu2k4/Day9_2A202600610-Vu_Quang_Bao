@@ -26,8 +26,18 @@ LEGAL_KNOWLEDGE = [
             "(4) cover damages. Statute of limitations is typically 4 years (UCC § 2-725)."
         ),
     },
-    # TODO: Thêm entry về luật lao động Việt Nam
-    # Gợi ý: id="labor_law", keywords=["lao động", "sa thải", ...], text="..."
+    {
+        "id": "labor_law",
+        "keywords": ["lao động", "sa thải", "hợp đồng lao động", "labor", "termination", "nhân viên"],
+        "text": (
+            "Theo Bộ luật Lao động Việt Nam 2019, người sử dụng lao động có thể "
+            "đơn phương chấm dứt hợp đồng trong các trường hợp: (1) người lao động "
+            "thường xuyên không hoàn thành công việc; (2) bị ốm đau, tai nạn đã điều trị "
+            "12 tháng chưa khỏi; (3) thiên tai, hỏa hoạn buộc thu hẹp sản xuất; "
+            "(4) người lao động đủ tuổi nghỉ hưu. Khi sa thải trái luật, người sử dụng lao động "
+            "phải nhận người lao động trở lại làm việc và bồi thường ít nhất 2 tháng lương."
+        ),
+    },
 ]
 
 
@@ -41,21 +51,31 @@ def search_legal_knowledge(query: str) -> str:
     return "Không tìm thấy thông tin liên quan."
 
 
-# TODO: Tạo tool check_statute_of_limitations
-# Gợi ý: nhận case_type (str), trả về thời hiệu khởi kiện
-# @tool
-# def check_statute_of_limitations(case_type: str) -> str:
-#     """Kiểm tra thời hiệu khởi kiện."""
-#     # YOUR CODE HERE
-#     pass
+@tool
+def check_statute_of_limitations(case_type: str) -> str:
+    """Kiểm tra thời hiệu khởi kiện theo loại vụ án.
+
+    Args:
+        case_type: Loại vụ án (contract, tort, property, labor, nda)
+    """
+    limits = {
+        "contract": "4 năm (UCC § 2-725) — tính từ ngày vi phạm hợp đồng",
+        "tort": "2-3 năm tùy bang — tính từ ngày phát hiện thiệt hại",
+        "property": "5 năm — tính từ ngày xâm phạm tài sản",
+        "labor": "1-3 năm tùy loại khiếu nại (Việt Nam: 1 năm theo BLLĐ 2019)",
+        "nda": "3 năm (DTSA, 18 U.S.C. § 1836) — tính từ ngày phát hiện vi phạm",
+    }
+    result = limits.get(case_type.lower())
+    if result:
+        return f"Thời hiệu khởi kiện cho '{case_type}': {result}"
+    return f"Không xác định được thời hiệu cho loại vụ án '{case_type}'. Các loại hợp lệ: {', '.join(limits.keys())}"
 
 
 async def main():
     load_dotenv()
     llm = get_llm()
     
-    # TODO: Thêm tool mới vào danh sách
-    tools = [search_legal_knowledge]  # Thêm check_statute_of_limitations vào đây
+    tools = [search_legal_knowledge, check_statute_of_limitations]
     llm_with_tools = llm.bind_tools(tools)
     
     question = "Thời hiệu khởi kiện vụ vi phạm hợp đồng là bao lâu?"
@@ -79,7 +99,8 @@ async def main():
             
             if tool_call["name"] == "search_legal_knowledge":
                 tool_result = search_legal_knowledge.invoke(tool_call["args"])
-            # TODO: Thêm xử lý cho check_statute_of_limitations
+            elif tool_call["name"] == "check_statute_of_limitations":
+                tool_result = check_statute_of_limitations.invoke(tool_call["args"])
             
             if tool_result:
                 messages.append(ToolMessage(content=tool_result, tool_call_id=tool_call["id"]))
